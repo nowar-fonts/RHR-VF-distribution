@@ -90,7 +90,19 @@ const config = {
 	},
 };
 
+function makeNameEntry(nameId, value) {
+	return {
+		platformID: 3,
+		encodingID: 1,
+		languageID: 0x0409,
+		nameID: nameId,
+		value: value,
+	}
+}
+
 function makeInstanceNameTable(subfamily, weight, roundness) {
+	const nameId = Ot.Name.NameID;
+
 	const family = `${config.name.normal} ${subfamily}`;
 	const psFamily = `${config.name.postscript}${subfamily}`;
 	const fullname = `${family} R${roundness} W${weight}`;
