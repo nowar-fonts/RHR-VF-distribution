@@ -1,1 +1,4 @@
 /node_modules/
+/rhr/*.otf
+/src/rhr-font.js
+/dist/

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="renderer" content="webkit">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>RHR VF for WoW</title>
+</head>
+
+<body>
+	<button id="run-instancer">Run!</button>
+
+	<a id="download-result"></a>
+
+	<div id="progress-text"></div>
+
+	<script>
+		document.getElementById('run-instancer').addEventListener('click', () => {
+			const font = window.modMain.generateRhrInstance(900, 100, document.getElementById('progress-text'));
+			console.log(font);
+		});
+	</script>
+</body>
+
+</html>
