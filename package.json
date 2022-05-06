@@ -1,5 +1,6 @@
 {
 	"dependencies": {
+		"fzstd": "^0.0.4",
 		"ot-builder": "~1.5.2"
 	},
 	"devDependencies": {

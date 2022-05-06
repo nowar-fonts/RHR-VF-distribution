@@ -1,10 +1,14 @@
 'use strict';
 
 const { Ot, FontIo, Rectify } = require('ot-builder');
+const fzstd = require('fzstd');
 
 function loadSfnt() {
-	const otfA = require('./rhr-font');
-	const otfB = Buffer.from(otfA, 'base64');
+	const otfZstdA = require('./rhr-font');
+	const otfZstdB = Buffer.from(otfZstdA, 'base64');
+	const otfB = Buffer.from(fzstd.decompress(
+		Uint8Array.from(otfZstdB)
+	));
 	const sfnt = FontIo.readSfntOtf(otfB);
 	return sfnt;
 }

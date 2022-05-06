@@ -12,6 +12,7 @@ pyftsubset rhr/ResourceHanRoundedSC-VF.otf \
 	--no-hinting \
 	--desubroutinize \
 	--name-languages=0x0409 \
+	--obfuscate-names \
 	--no-glyph-names \
 	--recalc-bounds \
 	--no-recalc-timestamp \
@@ -21,4 +22,6 @@ pyftsubset rhr/ResourceHanRoundedSC-VF.otf \
 	--recalc-max-context \
 	--timing
 
-node snippet/dump-rhr-otf.js rhr/ResourceHanRoundedSC-VF.WoWG.otf >src/rhr-font.js
+zstd --ultra -22 --threads=0 --force rhr/ResourceHanRoundedSC-VF.WoWG.otf -o rhr/ResourceHanRoundedSC-VF.WoWG.otf.zst
+
+node snippet/dump-blob.js rhr/ResourceHanRoundedSC-VF.WoWG.otf.zst >src/rhr-font.js
