@@ -1,5 +1,5 @@
 /node_modules/
 /rhr/
 !/rhr/placeholder
-/src/rhr-font.js
+/src/rhr-*.js
 /dist/
