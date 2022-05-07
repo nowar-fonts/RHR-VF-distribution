@@ -17,11 +17,12 @@ Notes 说明
   * 360 极速浏览器 X 21.0.1094.0 经测试会崩溃。
   * 大多数双核浏览器至今尚未发布 64 位版本。
 
-### 操作步骤
+### How to Use<br>操作步骤
 
 1. Download `RHR-VF-<version>.zip` and unzip it.<br>下载 `RHR-VF-<version>.zip` 并解压。
 1. Open the HTML file with **64-bit** browser.<br>使用 **64 位**浏览器打开这个 HTML 文件。
-1. Follow the instruction.<br>根据界面提示操作。
+1. Follow the instruction to generate OTF file.<br>根据界面提示操作以生成 OTF 字体。
+1. Download the font and copy it to `World of Warcraft/_retail_/Fonts/` with proper filename.<br>下载字体文件，复制到 `World of Warcraft/_retail_/Fonts/` 并按要求重命名。
 
 ## How to Build
 
