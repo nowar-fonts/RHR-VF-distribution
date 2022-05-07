@@ -13,28 +13,8 @@
 		}
 
 		.live-preview {
-			font-family: 'RHR SC';
-			font-variation-settings: 'wght'var(--preview-weight), 'ROND'var(--preview-roundness);
-		}
-
-		#dropzone {
-			text-align: center;
-			width: 300px;
-			height: 100px;
-			margin: 10px;
-			padding: 10px;
-			border: 4px dashed red;
-			border-radius: 10px;
-		}
-
-		#boxtitle {
-			display: table-cell;
-			vertical-align: middle;
-			text-align: center;
-			color: black;
-			font: bold 2em "Arial", sans-serif;
-			width: 300px;
-			height: 100px;
+			font-family: "RHR SC";
+			font-variation-settings: "wght" var(--preview-weight), "ROND" var(--preview-roundness);
 		}
 	</style>
 </head>
@@ -137,15 +117,18 @@
 			downloadButton.className = 'btn btn-success';
 		}
 
-		function buildFont() {
-			clearDownload();
-			const { weight, roundness } = getWeightAndRoundness();
-			const font = window.modMain.generateRhrInstance(weight, roundness, progressPane);
-			const url = window.modMain.saveToDataUrl(font, progressPane);
-			showDownload(url, `Nowar-ResourceHanRoundedSC-R${roundness}W${weight}.otf`);
-		}
+		// function buildFont(weight, roundness) {
+		// 	clearDownload();
+		// 	const font = window.modMain.generateRhrInstance(weight, roundness, progressPane);
+		// 	const url = window.modMain.saveToDataUrl(font, progressPane);
+		// 	showDownload(url, `Nowar-ResourceHanRoundedSC-R${roundness}W${weight}.otf`);
+		// }
 
-		document.getElementById('run-instancer').addEventListener('click', buildFont);
+		document.getElementById('run-instancer').addEventListener('click', () => {
+			const worker = window.modMain.InstancerWorker();
+			const { weight, roundness } = getWeightAndRoundness();
+			worker.postMessage({ weight, roundness, sfnt: window.modMain.sfnt });
+		});
 	</script>
 </body>
 

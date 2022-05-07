@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const HtmlInlineScriptPlugin = require('html-inline-script-webpack-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
+const WorkerPlugin = require('worker-plugin');
 
 module.exports = {
 	mode: 'production',
@@ -15,6 +16,12 @@ module.exports = {
 		rules: [{
 			test: /\.css$/,
 			use: ['style-loader', 'css-loader'],
+		}, {
+			test: /\.worker\.js$/,
+			loader: "worker-loader",
+			options: {
+				inline: "no-fallback",
+			},
 		}],
 	},
 	plugins: [
@@ -31,5 +38,6 @@ module.exports = {
 			chunks: ["index"]
 		}),
 		new HtmlInlineScriptPlugin(),
+		new WorkerPlugin(),
 	]
 };
