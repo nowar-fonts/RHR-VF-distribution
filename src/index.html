@@ -28,7 +28,6 @@
 </head>
 
 <body>
-
 	<main class="container-xxl">
 		<div class="row my-1 mx-n1 live-preview">
 			<div class="col-12 px-1 py-1 col-lg-6">
@@ -199,6 +198,7 @@
 
 		function terminateWorker() {
 			worker.terminate();
+			setStatus('warning', 'Terminated.', `已终止。`);
 			disableTerminateButton();
 			setupWorker();
 			enableRunButton();

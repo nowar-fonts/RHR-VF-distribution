@@ -31,8 +31,10 @@ module.exports = {
 			filename: './index.html',
 			inlineSource: '.(js)',
 			minify: {
+				collapseWhitespace: true,
+				minifyCSS: true,
+				minifyJS: true,
 				removeComments: true,
-				collapseWhitespace: true
 			},
 			chunks: ["index"]
 		}),
