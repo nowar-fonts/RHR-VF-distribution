@@ -1,6 +1,8 @@
 'use strict';
 
-require('bootstrap/dist/css/bootstrap.min.css');
+const isBrowser = (typeof document == 'object' && typeof window == 'object');
+
+isBrowser && require('bootstrap/dist/css/bootstrap.min.css');
 
 const { Ot, FontIo, Rectify } = require('ot-builder');
 const fzstd = require('fzstd');
@@ -9,11 +11,10 @@ async function loadLivePreviewFont() {
 	const woffA = require('./rhr-preview');
 	const font = new FontFace('RHR SC', `url(data:font/woff2;base64,${woffA})`);
 	await font.load();
-	if (typeof document == 'object')
-		document.fonts.add(font);
+	document.fonts.add(font);
 }
 
-loadLivePreviewFont();
+isBrowser && loadLivePreviewFont();
 
 function loadSfnt() {
 	const otfZstdA = require('./rhr-font');
@@ -69,10 +70,6 @@ function convertToCff1(font) {
 }
 
 const config = {
-	name: {
-		normal: 'Resource Han Rounded (Nowar Distribution)',
-		postscript: 'Nowar-ResourceHanRounded',
-	},
 	version: {
 		head: 1.910,
 		name: "1.910",
@@ -100,17 +97,17 @@ function makeNameEntry(nameId, value) {
 	}
 }
 
-function makeInstanceNameTable(subfamily, weight, roundness) {
+function makeInstanceNameTable(weight, roundness) {
 	const nameId = Ot.Name.NameID;
 
-	const family = `${config.name.normal} ${subfamily}`;
-	const psFamily = `${config.name.postscript}${subfamily}`;
+	const family = `Resource Han Rounded SC (Nowar Distribution)`;
+	const psFamily = `Nowar-ResourceHanRoundedSC`;
 	const fullname = `${family} R${roundness} W${weight}`;
 	const result = [
 		makeNameEntry(nameId.Copyright, config.copyright),
 		makeNameEntry(nameId.LegacyFamily, fullname),
 		makeNameEntry(nameId.LegacySubfamily, 'Regular'),
-		makeNameEntry(nameId.UniqueFontId, `${config.vendor.name}: ${fullname}`),
+		makeNameEntry(nameId.UniqueFontId, `${config.vendor.id}: ${fullname}`),
 		makeNameEntry(nameId.FullFontName, fullname),
 		makeNameEntry(nameId.VersionString, `Version ${config.version.name}`),
 		makeNameEntry(nameId.PostscriptName, `${psFamily}-R${roundness}W${weight}`),
@@ -128,7 +125,7 @@ function makeInstanceNameTable(subfamily, weight, roundness) {
 }
 
 function buildInstanceMetaData(font, param) {
-	const { subfamily, weight, roundness } = param;
+	const { weight, roundness } = param;
 
 	font.head.fontRevision = config.version.head;
 	font.head.macStyle = weight == 700 ? Ot.Head.MacStyle.Bold : 0;
@@ -137,7 +134,7 @@ function buildInstanceMetaData(font, param) {
 	font.os2.usWeightClass = weight;
 	font.os2.fsSelection = Ot.Os2.FsSelection.USE_TYPO_METRICS | (weight == 700 ? Ot.Os2.FsSelection.BOLD : 0) | (weight == 400 ? Ot.Os2.FsSelection.REGULAR : 0);
 
-	font.name.records = makeInstanceNameTable(subfamily, weight, roundness);
+	font.name.records = makeInstanceNameTable(weight, roundness);
 }
 
 function normaliseWeight(weight) {
@@ -159,19 +156,28 @@ function normaliseRoundness(roundness) {
 }
 
 function generateRhrInstance(weight, roundness, progressPane) {
-	progressPane.innerHTML = '<p>Loading Resource Han Rounded...</p>';
+	progressPane.innerHTML = '<p>Loading Resource Han Rounded...<br>正在加载 Resource Han Rounded……</p>';
 	const font = fontFromSfnt();
-	progressPane.innerHTML += '<p>Instancing Resource Han Rounded...</p>';
+	progressPane.innerHTML += '<p>Instancing Resource Han Rounded...<br>正在抽取单一样式……</p>';
 	instanceFont(font, [['wght', normaliseWeight(weight)], ['ROND', normaliseRoundness(roundness)]], progressPane);
-	progressPane.innerHTML += '<p>Generating metadata for your instance...</p>';
+	progressPane.innerHTML += '<p>Generating metadata for your instance...<br>正在生成元数据……</p>';
 	convertToCff1(font);
-	buildInstanceMetaData(font, { subfamily: 'SC', weight, roundness });
+	buildInstanceMetaData(font, { weight, roundness });
 	return font;
+}
+
+function saveToDataUrl(font, progressPane) {
+	progressPane.innerHTML += '<p>Generating OTF file...<br>正在生成 OTF 文件……</p>';
+	const sfnt = FontIo.writeFont(font);
+	const otfB = FontIo.writeSfntOtf(sfnt);
+	const otfA = otfB.toString('base64');
+	progressPane.innerHTML += '<p>Done.<br>完成。</p>';
+	return 'data:font/otf;base64,' + otfA;
 }
 
 module.exports = {
 	generateRhrInstance,
+	saveToDataUrl,
 };
 
-if (typeof window == 'object')
-	window.modMain = module.exports;
+isBrowser && (window.modMain = module.exports);

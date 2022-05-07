@@ -7,38 +7,145 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>RHR VF for WoW</title>
 	<style>
+		:root {
+			--preview-weight: 400;
+			--preview-roundness: 100;
+		}
+
 		.live-preview {
 			font-family: 'RHR SC';
+			font-variation-settings: 'wght'var(--preview-weight), 'ROND'var(--preview-roundness);
+		}
+
+		#dropzone {
+			text-align: center;
+			width: 300px;
+			height: 100px;
+			margin: 10px;
+			padding: 10px;
+			border: 4px dashed red;
+			border-radius: 10px;
+		}
+
+		#boxtitle {
+			display: table-cell;
+			vertical-align: middle;
+			text-align: center;
+			color: black;
+			font: bold 2em "Arial", sans-serif;
+			width: 300px;
+			height: 100px;
 		}
 	</style>
 </head>
 
 <body>
 
-	<div class="live-preview">
-		<div>
-			<h2>Scythe of Elune</h2>
-			<p>The weapon you now hold is a physical, tangible representation of both the divine and the savage, of serenity and untamed ferocity. The scythe is not only a weapon but a symbol. Perhaps its greatest lesson is that the traits of tranquility and furor exist within all living beings, and sometimes the best we can hope for... is to find balance.</p>
-			<p>May the Scythe of Elune grant you the strength to destroy your enemies, and the wisdom to know when to stay your hand.</p>
+	<main class="container">
+		<div class="live-preview">
+			<div>
+				<h2>Scythe of Elune</h2>
+				<p>The weapon you now hold is a physical, tangible representation of both the divine and the savage, of serenity and untamed ferocity. The scythe is not only a weapon but a symbol. Perhaps its greatest lesson is that the traits of tranquility and furor exist within all living beings, and sometimes the best we can hope for... is to find balance.</p>
+				<p>May the Scythe of Elune grant you the strength to destroy your enemies, and the wisdom to know when to stay your hand.</p>
+			</div>
+			<div>
+				<h2>月神镰刀</h2>
+				<p>你手中的这把武器既代表着圣洁，也体现了残暴，它是宁静与狂暴相结合的实体。这把镰刀不仅仅是武器，也是一种象征。或许它蕴含着这样的道理：所有生灵都拥有安宁与残暴这两种特质。而我们能做的，便是……在两者之间找到平衡。</p>
+				<p>愿月神镰刀赐予你消灭强敌的力量，以及明白该何时停手的睿智。</p>
+			</div>
 		</div>
+
+		<form>
+			<div class="form-group">
+				<label for="exampleInputEmail1">Weight 字重</label>
+				<div class="input-group">
+					<div class="input-group-prepend">
+						<span class="input-group-text" id="weight-echo">400</span>
+					</div>
+					<input type="range" class="form-control" id="weight-slider" min="200" max="900" value="400" oninput="previewWeightAndRoundness()">
+					<div class="input-group-append">
+						<button class="btn btn-outline-secondary" type="button" onclick="resetWeight()">Reset 重置</button>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="exampleInputEmail1">Roundness 圆角程度</label>
+				<div class="input-group">
+					<div class="input-group-prepend">
+						<span class="input-group-text" id="roundness-echo">100</span>
+					</div>
+					<input type="range" class="form-control" id="roundness-slider" min="0" max="100" value="100" oninput="previewWeightAndRoundness()">
+					<div class="input-group-append">
+						<button class="btn btn-outline-secondary" type="button" onclick="resetRoundness()">Reset 重置</button>
+					</div>
+				</div>
+			</div>
+		</form>
+
 		<div>
-			<h2>月神镰刀</h2>
-			<p>你手中的这把武器既代表着圣洁，也体现了残暴，它是宁静与狂暴相结合的实体。这把镰刀不仅仅是武器，也是一种象征。或许它蕴含着这样的道理：所有生灵都拥有安宁与残暴这两种特质。而我们能做的，便是……在两者之间找到平衡。</p>
-			<p>愿月神镰刀赐予你消灭强敌的力量，以及明白该何时停手的睿智。</p>
+			<button id="run-instancer" class="btn btn-primary">Run 开始运行</button>
+			<a id="download-result" class="btn btn-light">Download 下载</a>
+			<a class="btn btn-warning" href="javascript:clearDownload()">清除缓存</a>
 		</div>
-	</div>
 
-	<button id="run-instancer">Run 开始运行</button>
-
-	<a id="download-result">Download 下载</a>
-
-	<div id="progress-text"></div>
+		<div id="progress-text"></div>
+	</main>
 
 	<script>
-		document.getElementById('run-instancer').addEventListener('click', () => {
-			const font = window.modMain.generateRhrInstance(900, 100, document.getElementById('progress-text'));
-			console.log(font);
-		});
+		const progressPane = document.getElementById('progress-text');
+		const downloadButton = document.getElementById('download-result');
+		const weightSlider = document.getElementById('weight-slider');
+		const weightEcho = document.getElementById('weight-echo');
+		const roundnessSlider = document.getElementById('roundness-slider');
+		const roundnessEcho = document.getElementById('roundness-echo');
+
+		function getWeightAndRoundness() {
+			const weight = weightSlider.value;
+			const roundness = roundnessSlider.value;
+			return { weight, roundness };
+		}
+
+		function resetWeight() {
+			weightSlider.value = 400;
+			previewWeightAndRoundness();
+		}
+
+		function reseRoundness() {
+			roundnessSlider.value = 100;
+			previewWeightAndRoundness();
+		}
+
+		function previewWeightAndRoundness() {
+			const { weight, roundness } = getWeightAndRoundness();
+			weightEcho.innerText = weight;
+			roundnessEcho.innerText = roundness.padStart(3, '0');
+			document.documentElement.style.setProperty('--preview-weight', weight);
+			document.documentElement.style.setProperty('--preview-roundness', roundness);
+		}
+
+		previewWeightAndRoundness();
+
+		function clearDownload() {
+			downloadButton.href = null;
+			downloadButton.download = null;
+			downloadButton.className = 'btn btn-light';
+		}
+
+		function showDownload(url, filename) {
+			downloadButton.href = url;
+			downloadButton.download = filename;
+			downloadButton.className = 'btn btn-success';
+		}
+
+		function buildFont() {
+			clearDownload();
+			const { weight, roundness } = getWeightAndRoundness();
+			const font = window.modMain.generateRhrInstance(weight, roundness, progressPane);
+			const url = window.modMain.saveToDataUrl(font, progressPane);
+			showDownload(url, `Nowar-ResourceHanRoundedSC-R${roundness}W${weight}.otf`);
+		}
+
+		document.getElementById('run-instancer').addEventListener('click', buildFont);
 	</script>
 </body>
 
