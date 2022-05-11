@@ -20,9 +20,23 @@
 		.live-preview .card {
 			height: 100%;
 			max-height: 14em;
-			overflow: clip;
+			overflow: hidden;
 			text-align: justify;
 			hyphens: auto;
+		}
+
+		#status-pane-parent {
+			padding-top: 0;
+			padding-bottom: 0;
+		}
+
+		#status-pane .alert {
+			margin-bottom: 0;
+			padding: .375rem .75rem;
+		}
+
+		#status-pane ol {
+			margin-bottom: 0;
 		}
 	</style>
 </head>
@@ -75,9 +89,11 @@
 					</div>
 				</div>
 			</div>
-			<div class="form-group">
+			<div class="mb-3">
 				<label for="status-pane">Status 运行状态</label>
-				<div class="form-control" id="status-pane"></div>
+				<div class="container-xxl form-control" id="status-pane-parent">
+					<div class="row" id="status-pane"></div>
+				</div>
 			</div>
 		</form>
 
@@ -130,6 +146,7 @@
 		previewWeightAndRoundness();
 
 		let worker;
+		let requestDevTools = false;
 
 		function clearDownload() {
 			downloadButtonA.removeAttribute('href');
@@ -146,8 +163,37 @@
 		}
 
 		function setStatus(klass, textEn, textZh) {
-			statusPane.className = `form-control alert alert-${klass}`;
-			statusPane.innerText = textEn + '\n' + textZh;
+			statusPane.innerHTML = `<div class="col-lg alert alert-${klass}">${textEn}</div><div class="col-lg alert alert-${klass}">${textZh}</div>`;
+		}
+
+		function checkHeapSize() {
+			if (typeof performance.memory != 'object') {
+				// performance.memory is Chromium-only. notice user on non-Chromium browsers.
+				setStatus('warning', 'Note: unknown memory limit. This app requires approx 4 GiB JavaScript heap memory.', '提示：无法检测内存限制。此应用程序大约需要 4 GiB JavaScript 堆内存。');
+				return true;
+			}
+			const memoryInGibibyte = performance.memory.jsHeapSizeLimit / 1024 / 1024 / 1024;
+			const memoryForDisplay = memoryInGibibyte.toFixed(2);
+			if (memoryInGibibyte < 2) {
+				// definitely not work
+				// 64-bit browser reports somewhat > 2 GiB (generally 2072 MiB or 2.19×10⁹ bytes at least)
+				setStatus('danger', `错误: insufficient memory. Your browser provides ${memoryForDisplay} GiB JavaScript heap memory, but app requires approx 4 GiB memory.`, `错误：内存不足。浏览器 JavaScript 堆内存限制为 ${memoryForDisplay} GiB，但此应用程序大约需要 4 GiB 内存。`);
+				return false;
+			}
+			if (memoryInGibibyte < 3.5) {
+				// most hard piece
+				// with devtools on, the JavaScript heap can be increased
+				setStatus(
+					'warning',
+					`Note: possibly insufficient memory. The app requires approx 4 GiB memory, but your browser reports its memory limit is ${memoryForDisplay} GiB.<br>You can try running this app with developer tools on.<ol><li>Press <code>F12</code> to open developer tools.</li><li>Switch to “Console” tab and excute <code>enableRunButton()</code> to unlock the “Run” button.</li><li>Run the app.</li><li>When the app reaches the memory limit, the browser will pause it, and the developer tool switches to <b>“Sources” tab</b>.</li><li>Press <code>F8</code> to resume.</li></ol>`,
+					`提示：内存可能不足。此应用程序大约需要 4 GiB JavaScript 堆内存，但浏览器报告的内存限制为 ${memoryForDisplay} GiB。<br>您可以尝试在打开开发者工具的情况下运行此程序。<ol><li>按下 <code>F12</code> 打开开发者工具；</li><li>切换到 “控制台”（Console）选项卡并执行 <code>enableRunButton()</code> 解锁 “开始运行” 按钮；</li><li>开始运行此程序；</li><li>当此程序消耗的内存达到限制时，浏览器会暂停运行此程序，开发者工具会切换到 <b>“源代码”（Sources，或误译作 “来源”）选项卡</b>；</li><li>按下 <code>F8</code> 恢复运行。</li></ol>`
+				);
+				requestDevTools = true;
+				return false;
+			}
+			// with enough heap memory it works
+			setStatus('success', 'Ready.', '准备就绪。');
+			return true;
 		}
 
 		function setupWorker() {
@@ -171,22 +217,24 @@
 				const status = data.status;
 				switch (status) {
 					case 'load-font':
-						setStatus('primary', '1/5: loading Resource Han Rounded...', '1/5：正在加载 Resource Han Rounded……');
+						if (requestDevTools)
+							setStatus('primary', '1/4: loading Resource Han Rounded...<br>Note that the app cannot prompt on pause. Please watch the developer tool yourself and press <code>F8</code> when it switches to “Sources” tab', '1/4：正在加载 Resource Han Rounded……<br>注意，程序无法在暂停执行时给出提示，请您自行关注开发者工具，在切换到 “源代码”（Sources，或误译作 “来源”）选项卡后按 <code>F8</code> 继续。');
+						else
+							setStatus('primary', '1/4: loading Resource Han Rounded...', '1/4：正在加载 Resource Han Rounded……');
 						break;
 					case 'instance-font':
-						setStatus('primary', '2/5: instancing Resource Han Rounded...', '2/5：正在提取单一样式……');
+						setStatus('primary', '2/4: instancing Resource Han Rounded...', '2/4：正在提取单一样式……');
 						break;
 					case 'generate-metadata':
-						setStatus('primary', '3/5: generating metadata for your instance...', '3/5：正在生成元数据……');
 						break;
 					case 'save-otf':
-						setStatus('primary', '4/5: generating OTF file...', '4/5：正在生成 OTF 文件……');
+						setStatus('primary', '3/4: generating OTF file...', '3/4：正在生成 OTF 文件……');
 						break;
 					case 'done':
 						const url = data.url;
 						showDownload(url, `Nowar-ResourceHanRoundedSC-R${roundness}W${weight}.otf`);
 						const timeElapsed = (Date.now() - timeBegin) / 1000;
-						setStatus('success', `5/5: success. Download link ready. Time elapsed: ${timeElapsed} s.`, `5/5：成功，下载链接已准备就绪。耗时 ${timeElapsed} 秒。`);
+						setStatus('success', `4/4: success. Download link ready. Time elapsed: ${timeElapsed} s.`, `4/4：成功，下载链接已准备就绪。耗时 ${timeElapsed} 秒。`);
 						disableTerminateButton();
 						enableRunButton();
 						break;
@@ -225,8 +273,7 @@
 		}
 
 		setupWorker();
-		enableRunButton();
-		setStatus('success', 'Ready.', '准备就绪。');
+		checkHeapSize() && enableRunButton();
 	</script>
 </body>
 
